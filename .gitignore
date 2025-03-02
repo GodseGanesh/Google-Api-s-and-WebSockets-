@@ -37,3 +37,7 @@ venv/
 
 # Ignore Git-related files
 .git/
+
+
+credentials.json
+bfg --delete-files credentials.json
