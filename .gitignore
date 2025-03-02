@@ -1,0 +1,39 @@
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment variables and secrets
+.env
+credentials.json  # Specific sensitive credentials
+
+# Ignore Django database files
+db.sqlite3
+*.sqlite3
+
+# Ignore logs
+*.log
+
+# Ignore Django migration cache files (but not the folder itself)
+migrations/**/__pycache__/
+
+# Ignore static and media files (if managed outside Git)
+staticfiles/
+media/
+
+# Ignore Virtual Environments
+.venv/
+venv/
+.myenv/
+
+# Ignore IDE/Editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore system/macOS files
+.DS_Store
+
+# Ignore Git-related files
+.git/

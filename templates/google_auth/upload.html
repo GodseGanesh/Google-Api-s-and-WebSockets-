@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Upload File to Google Drive</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ff9800;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ff9800;
+            background-color: #333;
+            color: #ff9800;
+            margin: 10px 0;
+            display: block;
+            width: 80%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        button {
+            background-color: #ff9800;
+            color: #1a1a1a;
+            padding: 10px 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ffb74d;
+        }
+
+        p#status {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h2>📂 Upload a File to Google Drive</h2>
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">🚀 Upload</button>
+
+    <p id="status"></p>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("⚠️ Please select a file first.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const accessToken = "YOUR_ACCESS_TOKEN";  
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const csrfToken = getCSRFToken(); // Fetch CSRF token
+
+            try {
+                document.getElementById("status").innerHTML = "⏳ Uploading...";
+
+                const response = await fetch("http://127.0.0.1:8000/upload-file/", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`,
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById("status").innerHTML = `✅ File uploaded!<br>📄 File ID: <strong>${data.file_id}</strong>`;
+                } else {
+                    document.getElementById("status").innerHTML = `❌ Error: ${data.error || "Something went wrong"}`;
+                }
+            } catch (error) {
+                document.getElementById("status").innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        function getCSRFToken() {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith("csrftoken=")) {
+                        cookieValue = cookie.substring("csrftoken=".length, cookie.length);
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
