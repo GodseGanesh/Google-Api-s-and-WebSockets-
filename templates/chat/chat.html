@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modern Chat UI</title>
+    <title>Chat App</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -13,72 +13,23 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <style>
-      .user-list .list-group-item {
-        transition: background 0.3s ease-in-out;
-        border: none;
-        border-radius: 10px;
-        margin-bottom: 5px;
-        padding: 10px;
-        display: flex;
-        align-items: center;
+      .room-list {
         background: #f8f9fa;
-      }
-      .user-list .list-group-item:hover {
-        background: #e2e6ea;
-      }
-      .user-status {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-left: auto;
-      }
-      .online {
-        background: green;
+        padding: 10px;
+        height: 100%;
       }
       .chat-header {
         background: #0d6efd;
         color: white;
         padding: 10px;
-        font-size: 18px;
-        font-weight: bold;
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        font-weight: bold;
       }
-      /* Ensure message input is always visible */
       .message-input {
         background: white;
         padding: 10px;
         border-top: 1px solid #ddd;
-        position: sticky;
-        bottom: 0;
-        width: 100%;
-      }
-      .message {
-        display: flex;
-        flex-direction: column;
-        max-width: 70%;
-        padding: 8px 12px;
-        margin-bottom: 10px;
-        border-radius: 10px;
-        font-size: 14px;
-        word-wrap: break-word;
-      }
-      .message.sent {
-        align-self: flex-end;
-        background: #dcf8c6;
-        border-bottom-right-radius: 0;
-      }
-      .message.received {
-        align-self: flex-start;
-        background: #f1f1f1;
-        border-bottom-left-radius: 0;
-      }
-      .message .sender {
-        font-size: 12px;
-        font-weight: bold;
-        color: #555;
-        margin-bottom: 4px;
       }
       #chat-box {
         display: flex;
@@ -87,62 +38,153 @@
         padding: 10px;
         height: 400px;
       }
-      @media (max-width: 576px) {
-        #chat-box {
-          height: calc(100vh - 180px);
-          overflow-y: auto;
-        }
-        .user-list {
-          position: fixed;
-          left: -250px;
-          top: 0;
-          width: 250px;
-          height: 100%;
-          background: white;
-          padding: 15px;
-          transition: left 0.3s ease-in-out;
-          z-index: 1000;
-          box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .user-list.active {
-          left: 0;
-        }
-        .toggle-user-list {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: #0d6efd;
-          color: white;
-          border: none;
-          padding: 5px 10px;
-          border-radius: 5px;
-          z-index: 1100;
-        }
+
+      /* Chat Bubble Styling */
+      .message {
+        padding: 10px 15px;
+        border-radius: 20px;
+        margin: 8px 0;
+        max-width: 70%;
+        position: relative;
+        font-size: 0.95rem;
+        word-wrap: break-word;
+      }
+
+      /* Messages from the Current User */
+      .message.user {
+        background: #0d6efd;
+        color: white;
+        align-self: flex-end;
+        text-align: right;
+      }
+
+      /* User Message Bubble Tail */
+      .message.user::after {
+        content: "";
+        position: absolute;
+        right: -10px;
+        top: 10px;
+        border-width: 8px;
+        border-style: solid;
+        border-color: transparent transparent transparent #0d6efd;
+      }
+
+      /* Messages from Other Users */
+      .message.other {
+        background: #e9ecef;
+        color: black;
+        align-self: flex-start;
+        text-align: left;
+      }
+
+      /* Other User Message Bubble Tail */
+      .message.other::after {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 10px;
+        border-width: 8px;
+        border-style: solid;
+        border-color: transparent #e9ecef transparent transparent;
+      }
+
+      /* Timestamp Styling */
+      .timestamp {
+        font-size: 0.75em;
+        color: gray;
+        display: block;
+        margin-top: 3px;
+      }
+
+      .plus-icon {
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .join-room-input {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
       }
     </style>
   </head>
   <body class="bg-light">
+    <!-- Modal for Creating a New Room -->
+    <div class="modal" id="roomModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New Room</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              id="new-room-name"
+              type="text"
+              class="form-control"
+              placeholder="Enter Room Name"
+            />
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" onclick="createRoom()">
+              Create
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="container mt-4">
       <div
-        class="row shadow rounded overflow-hidden bg-white"
+        class="row shadow rounded bg-white"
         style="max-width: 1000px; margin: auto; height: 550px"
       >
-        <div class="col-md-3 border-end p-3 bg-white user-list">
-          <h5 class="mb-3 text-primary">
-            <i class="fas fa-users me-2"></i>Users
-          </h5>
-          <div id="user-list" class="list-group"></div>
+        <!-- Room List -->
+        <div class="col-md-3 border-end p-3 room-list">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="text-primary">
+              <i class="fas fa-door-open me-2"></i>Rooms
+            </h5>
+            <i
+              class="fas fa-plus-circle plus-icon text-primary"
+              onclick="openRoomModal()"
+            ></i>
+          </div>
+
+          <!-- Input to Join a Room -->
+          <div class="join-room-input">
+            <input
+              id="join-room-name"
+              type="text"
+              class="form-control"
+              placeholder="Enter Room Name"
+            />
+            <button class="btn btn-primary" onclick="joinRoomFromInput()">
+              Join
+            </button>
+          </div>
+
+          <ul id="room-list" class="list-group mt-3"></ul>
         </div>
+
+        <!-- Chat Box -->
         <div class="col-md-9 d-flex flex-column bg-light p-3">
           <div class="chat-header">
-            <span id="chat-room-name"></span>
-            <button id="toggle-user-list" class="toggle-user-list d-md-none">
-              <i class="fas fa-bars"></i>
-            </button>
+            <span id="chat-room-name">Select a room</span>
           </div>
           <div id="chat-box" class="flex-grow-1 overflow-auto p-3"></div>
           <div class="message-input d-flex align-items-center">
-            <input id="message-input" type="text" class="form-control me-2" placeholder="Type a message..." />
+            <input
+              id="message-input"
+              type="text"
+              class="form-control me-2"
+              placeholder="Type a message..."
+            />
             <button id="send-button" class="btn btn-primary">
               <i class="fas fa-paper-plane"></i>
             </button>
@@ -150,43 +192,148 @@
         </div>
       </div>
     </div>
+
     <script>
-      const username = prompt("Enter your username:") || "Anonymous";
-      const roomName = "general";
-      document.getElementById("chat-room-name").textContent = `Chat Room: ${roomName}`;
-      let ws = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/?username=${username}`);
-      ws.onmessage = function (event) {
-        let data = JSON.parse(event.data);
-        if (data.type === "chat") {
+      let roomName = "";
+      let rooms = new Set();
+      let ws;
+      let currentUser = "You";
+
+      function joinChat(room) {
+        if (roomName === room) return; // Prevent rejoining the same room
+        roomName = room;
+        document.getElementById(
+          "chat-room-name"
+        ).textContent = `Chat Room: ${room}`;
+
+        // Close existing WebSocket before opening a new one
+        if (ws) {
+          if (
+            ws.readyState === WebSocket.OPEN ||
+            ws.readyState === WebSocket.CONNECTING
+          ) {
+            ws.onclose = () => {
+              console.log(`Closed previous connection for room: ${roomName}`);
+              openNewWebSocket(room);
+            };
+            ws.close();
+            return;
+          }
+        }
+
+        openNewWebSocket(room);
+      }
+
+      function openNewWebSocket(room) {
+        if (
+          ws &&
+          (ws.readyState === WebSocket.OPEN ||
+            ws.readyState === WebSocket.CONNECTING)
+        ) {
+          console.warn(
+            "WebSocket is still active, not opening a new connection."
+          );
+          return;
+        }
+
+        ws = new WebSocket(`ws://${window.location.host}/ws/chat/${room}/`);
+
+        ws.onopen = function () {
+          console.log(`Connected to room: ${room}`);
+          document.getElementById("chat-box").innerHTML = ""; // Clear chat history
+        };
+
+        ws.onmessage = function (event) {
+          let data = JSON.parse(event.data);
           let chatBox = document.getElementById("chat-box");
+
           let messageDiv = document.createElement("div");
-          messageDiv.classList.add("message", data.username === username ? "sent" : "received");
-          messageDiv.innerHTML = `<span class="sender">${data.username}</span>${data.message}`;
+          messageDiv.classList.add(
+            "message",
+            data.username === currentUser ? "user" : "other"
+          );
+
+          let timestamp = new Date(data.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          messageDiv.innerHTML = `
+            <strong>${data.username}</strong> 
+            <span class="timestamp">${timestamp}</span>
+            <br>${data.message}`;
+
           chatBox.appendChild(messageDiv);
           chatBox.scrollTop = chatBox.scrollHeight;
-        }
-        if (data.type === "user_list") {
-          updateUserList(data.users);
-        }
-      };
+        };
+
+        ws.onerror = function (error) {
+          console.error("WebSocket error:", error);
+        };
+
+        ws.onclose = function () {
+          console.log(`Disconnected from room: ${room}`);
+          ws = null; // Ensure ws is reset when closed
+        };
+      }
+
       function sendMessage() {
         let messageInput = document.getElementById("message-input");
-        let message = messageInput.value.trim();
-        if (message) {
-          ws.send(JSON.stringify({ message: message, username: username }));
-          messageInput.value = "";
+        if (!messageInput.value.trim()) return;
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          console.warn("Cannot send message: WebSocket is not open.");
+          return;
         }
+
+        ws.send(
+          JSON.stringify({
+            username: currentUser,
+            message: messageInput.value.trim(),
+          })
+        );
+        messageInput.value = "";
       }
+
       document.getElementById("send-button").onclick = sendMessage;
-      document.getElementById("message-input").addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          sendMessage();
+      document
+        .getElementById("message-input")
+        .addEventListener("keypress", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+          }
+        });
+
+      function joinRoomFromInput(){
+        const roon_name = document.getElementById('join-room-name').value
+        joinChat(roon_name)
+      }
+
+      function openRoomModal() {
+        let roomModal = new bootstrap.Modal(
+          document.getElementById("roomModal")
+        );
+        roomModal.show();
+      }
+
+      function createRoom() {
+        let roomName = document.getElementById("new-room-name").value.trim();
+        if (roomName) {
+          rooms.add(roomName);
+          document.getElementById("room-list").innerHTML += `
+      <li class="list-group-item list-group-item-action" onclick="joinChat('${roomName}')">
+          ${roomName}
+      </li>`;
+          joinChat(roomName);
         }
-      });
-      document.getElementById("toggle-user-list").addEventListener("click", function () {
-        document.querySelector(".user-list").classList.toggle("active");
-      });
+        let roomModal = bootstrap.Modal.getInstance(
+          document.getElementById("roomModal")
+        );
+        roomModal.hide();
+      }
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

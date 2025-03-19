@@ -1,23 +1,17 @@
-"""
-ASGI config for assignment project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
-"""
-
 import os
+import django
 
-from django.core.asgi import get_asgi_application
-
-from channels.routing import URLRouter,ProtocolTypeRouter
-
-from channels.auth import AuthMiddlewareStack
-
-import chat.routing
+print("Setting up Django...")  # Debugging line
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'assignment.settings')
+django.setup()
+
+
+from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+import chat.routing
+
 
 
 application = ProtocolTypeRouter({
@@ -26,5 +20,7 @@ application = ProtocolTypeRouter({
         URLRouter(
             chat.routing.websocket_urlpatterns
         )
-    )  
+    ),
 })
+
+
