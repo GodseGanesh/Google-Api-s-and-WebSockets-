@@ -10,9 +10,14 @@ from .helper import upload_file_to_drive, list_drive_files, download_file_from_d
 from rest_framework.parsers import MultiPartParser, FormParser
 import os
 import requests
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.generics import GenericAPIView
+from django.contrib.auth import login,authenticate,logout
+from django.contrib.auth.models import User
+from django.middleware.csrf import get_token
+from rest_framework.views import APIView
 @api_view(['GET'])
 def home(request):
+   
     """API to provide basic app information, including Google Drive endpoints."""
     base_url = request.build_absolute_uri("/")
     
@@ -207,3 +212,83 @@ def download_file(request, file_id):
         return res
 
     return Response({"error": "Failed to download the file."}, status=response.status_code)
+
+class UserLogin(APIView):
+    def post(self,request,*args,**kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(request,username=username,password=password)
+        
+
+        if user is not None:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request,user)
+            print(request.user,request.user.is_authenticated)
+            return Response(
+                {
+                    'message':'logged in successfullly !',
+                    'username':username,
+                },status=200
+
+            )
+        return Response(
+            {
+                'message':'Invalid Creadentials!',
+                
+            },status=400
+
+        )
+
+class UserRegisteration(APIView):
+    def post(self,request,*args,**kwargs):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if User.objects.filter(username=username).exists():
+           return Response({'message': 'Username already taken!'}, status=400)
+
+        user = User.objects.create_user(username=username,password=password,email=email)
+        user.save()
+
+        if user is not None:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request,user)
+
+            return Response(
+                {
+                    'message':'Registered user successfullly !',
+                    'username':username,
+                },status=200
+
+            )
+        return Response(
+            {
+                'message':'Invalid Creadentials!',
+                
+            },status=400
+
+        )
+
+
+class UserLogout(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'message': 'Logged out successfully!'})
+    
+
+
+class Temp(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        return Response({
+    'user': request.user.username if request.user.is_authenticated else None,
+    'authenticated': request.user.is_authenticated
+})
+    
+
+class GetCSRFToken(GenericAPIView):
+    def get(self, request, *args, **kwargs):
+        token = get_token(request)
+        return Response({'csrfToken': token})

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'channels',
     'chat',
+    'corsheaders',
     
 ]
 
@@ -55,6 +56,7 @@ ASGI_APPLICATION = 'assignment.asgi.application'
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -171,8 +173,29 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    
+]
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+
+CORS_EXPOSE_HEADERS = ["Set-Cookie"]
 
 
+CSRF_COOKIE_SECURE = True  # Set to False for development, True for HTTPS production
+SESSION_COOKIE_SECURE = True  # Set to False for development, True for HTTPS production
+CSRF_COOKIE_SAMESITE = 'None'  # Required for cross-origin requests
+SESSION_COOKIE_SAMESITE = 'None'  # SameSite=None for cookies to be sent cross-origin
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
 
 
 AUTHENTICATION_BACKENDS = [

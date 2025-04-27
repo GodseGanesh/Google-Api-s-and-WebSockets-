@@ -12,7 +12,13 @@ urlpatterns = [
     path('fetch-files/', views.fetch_files, name='fetch-files'),
     path('refresh_google_token/', views.refresh_google_token, name='refresh_google_token'),
     path('download-file/<str:file_id>/', views.download_file, name='download-file'),
-    path('upload/',views.upload,name="upload")
+    path('upload/',views.upload,name="upload"),
+    path('basic_login/',views.UserLogin.as_view(),name="basic_login"),
+    path('basic_register/',views.UserRegisteration.as_view(),name="basic_register"),
+    path('basic_logout/',views.UserLogout.as_view(),name="basic_logout"),
+    path('get_csrf_token/',views.GetCSRFToken.as_view(),name="get_csrf_token"),
+    path('temp/',views.Temp.as_view(),name="temp")
+
    
     
 ]
