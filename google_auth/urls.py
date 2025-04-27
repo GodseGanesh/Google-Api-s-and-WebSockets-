@@ -15,9 +15,9 @@ urlpatterns = [
     path('upload/',views.upload,name="upload"),
     path('basic_login/',views.UserLogin.as_view(),name="basic_login"),
     path('basic_register/',views.UserRegisteration.as_view(),name="basic_register"),
-    path('basic_logout/',views.UserLogout.as_view(),name="basic_logout"),
+    path('logout/',views.UserLogout.as_view(),name="logout"),
     path('get_csrf_token/',views.GetCSRFToken.as_view(),name="get_csrf_token"),
-    path('temp/',views.Temp.as_view(),name="temp")
+    path('google_login/',views.GoogleLogin.as_view(),name="google_login")
 
    
     

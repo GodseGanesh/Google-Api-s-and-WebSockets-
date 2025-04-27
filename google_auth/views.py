@@ -224,14 +224,13 @@ class UserLogin(APIView):
         if user is not None:
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request,user)
-            print(request.user,request.user.is_authenticated)
-            return Response(
-                {
-                    'message':'logged in successfullly !',
-                    'username':username,
-                },status=200
 
-            )
+            return Response({
+                'message': 'Logged in successfully!',
+                'username': user.username,
+                'email': user.email,
+                'authenticated': user.is_authenticated,
+            }, status=200)
         return Response(
             {
                 'message':'Invalid Creadentials!',
@@ -256,13 +255,13 @@ class UserRegisteration(APIView):
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request,user)
 
-            return Response(
-                {
-                    'message':'Registered user successfullly !',
-                    'username':username,
-                },status=200
-
-            )
+            return Response({
+                'message': 'Logged in successfully!',
+                'username': user.username,
+                'email': user.email,
+                'authenticated': user.is_authenticated,
+            }, status=200)
+        
         return Response(
             {
                 'message':'Invalid Creadentials!',
@@ -275,7 +274,23 @@ class UserRegisteration(APIView):
 class UserLogout(APIView):
     def post(self, request):
         logout(request)
-        return Response({'message': 'Logged out successfully!'})
+        return Response({'message': 'Logged out successfully!'},status=200)
+
+class GoogleLogin(APIView):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated:
+            return Response({
+                'message': 'Logged in successfully!',
+                'username': user.username,
+                'email': user.email,
+                'authenticated': user.is_authenticated,
+            }, status=200)
+        else:
+            return Response({
+                'message': 'Google login failed!',
+            }, status=401)
+
     
 
 
