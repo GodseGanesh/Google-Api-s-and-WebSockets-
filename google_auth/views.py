@@ -228,6 +228,7 @@ class UserLogin(APIView):
             return Response({
                 'message': 'Logged in successfully!',
                 'username': user.username,
+                'id': user.id,
                 'email': user.email,
                 'authenticated': user.is_authenticated,
             }, status=200)
@@ -258,6 +259,7 @@ class UserRegisteration(APIView):
             return Response({
                 'message': 'Logged in successfully!',
                 'username': user.username,
+                'id': user.id,
                 'email': user.email,
                 'authenticated': user.is_authenticated,
             }, status=200)
@@ -283,6 +285,7 @@ class GoogleLogin(APIView):
             return Response({
                 'message': 'Logged in successfully!',
                 'username': user.username,
+                'id': user.id,
                 'email': user.email,
                 'authenticated': user.is_authenticated,
             }, status=200)
